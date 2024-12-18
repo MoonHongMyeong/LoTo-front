@@ -7,7 +7,7 @@ export const DesktopLayout = ({ children }: { children: React.ReactNode }) => {
         </div>
       </header>
 
-      <main className="ml-64 flex-1 p-6">
+      <main className="min-h-[calc(100vh-64px)]">
         {children}
       </main>
     </div>

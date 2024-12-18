@@ -10,7 +10,7 @@ export const MobileLayout = ({children}: {children: React.ReactNode}) => {
                 </div>
             </header>
 
-            <main className="pb-16">
+            <main className="min-h-[calc(100vh-48px)]">
                 {children}
             </main>
 
