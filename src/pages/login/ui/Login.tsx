@@ -2,18 +2,22 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { DiscordLoginButton } from '@/features/auth/ui/DiscordLoginButton'
 import { jwtAuthApi } from '@/features/auth'
+import Cookies from 'js-cookie'
 
 export const Login = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
     const silentLogin = async () => {
-      try {
-        const response = await jwtAuthApi.silentLogin()
-        localStorage.setItem('accessToken', response.accessToken)
-        navigate('/main')
-      } catch (error) {
-        console.log('Silent login failed, showing login page')
+      const hasRefreshToken = Cookies.get('refreshToken') !== undefined
+      if (hasRefreshToken) {
+        try {
+          const response = await jwtAuthApi.silentLogin()
+          localStorage.setItem('accessToken', response.accessToken)
+          navigate('/main')
+        } catch (error) {
+          console.log('Silent login failed, showing login page')
+        }
       }
     }
 
