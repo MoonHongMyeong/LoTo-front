@@ -1,27 +1,38 @@
-import { createBrowserRouter, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/features/auth/model/useAuth'
+import { Layout } from '@/pages/_layout/ui/Layout'
+import { DiscordCallback } from '@/pages/auth/ui/DiscordCallback'
+import { Character } from '@/pages/character/ui/Character'
 import { Login } from '@/pages/login/ui/Login'
 import { Main } from '@/pages/main/ui/Main'
 import { Profile } from '@/pages/profile/ui/Profile'
 import { Shareroom } from '@/pages/shareroom/ui/Shareroom'
-import { Character } from '@/pages/character/ui/Character'
-import { Layout } from '@/pages/_layout/ui/Layout'
-import { DiscordCallback } from '@/pages/auth/ui/DiscordCallback'
 import { LoadingSpinner } from '@/shared/ui/LoadingSpinner'
+import { createBrowserRouter, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth()
   const navigate = useNavigate()
 
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      navigate('/login', { state: { from: window.location.pathname } })
-    }
-  }, [isLoading, isAuthenticated, navigate])
-
   if (isLoading) return <LoadingSpinner />
-  if (!isAuthenticated) return null
+  if (!isAuthenticated) {
+    navigate('/login', { state: { from: window.location.pathname } })
+  }
+
+  return children
+}
+
+const LoginRoute = ({ children }: { children: React.ReactNode }) => {
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const hasAccessToken = localStorage.getItem('accessToken') !== undefined
+    if (hasAccessToken) {
+      const from = location.state?.from || '/'
+      navigate(from, { replace: true })
+    }
+  }, [location.state?.from, navigate])
 
   return children
 }
@@ -32,11 +43,11 @@ export const router = createBrowserRouter([
     element: <DiscordCallback />,
   },
   {
-    path: '/',
-    element: <Layout><Login /></Layout>,
+    path: '/login',
+    element: <LoginRoute><Layout><Login /></Layout></LoginRoute>,
   },
   {
-    path: '/main',
+    path: '/',
     element: <ProtectedRoute><Layout><Main /></Layout></ProtectedRoute>,
   },
   {
