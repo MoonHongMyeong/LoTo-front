@@ -1,16 +1,13 @@
-import { useNavigate } from 'react-router-dom'
-
 interface FetchOptions extends RequestInit {
   skipAuth?: boolean
 }
 
-const BASE_URL = 'localhost:8080/api/v1'
+const BASE_URL = 'http://localhost:8080/api/v1'
 
 class ApiClient {
   private async fetch<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
     const { skipAuth = false, ...fetchOptions } = options
     const accessToken = localStorage.getItem('accessToken')
-    const navigate = useNavigate()
 
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
@@ -45,7 +42,6 @@ class ApiClient {
         return this.fetch(endpoint, options)
       } catch (error) {
         localStorage.removeItem('accessToken')
-        navigate('/login')
         throw error
       }
     }
