@@ -1,49 +1,43 @@
-import { AuthDto } from '@/entities/auth/model/dtos';
+import { AuthDto } from '@/entities/auth';
 import { jwtAuthApi } from '@/features/auth';
-import { ApiError, ApiResponse } from '@/shared/api/types';
+import { ApiResponse } from '@/shared/api/types';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '@/entities/auth';
 
-interface AuthState {
-    isAuthenticated: boolean;
-    isLoading: boolean;
-    error?: ApiError;
-}
-
-interface AuthHookReturn extends AuthState {
-    checkAuth: () => Promise<void>;
-}
-
-export const useAuth = (): AuthHookReturn => {
+export const useAuth = () => {
     const navigate = useNavigate();
-    const [state, setState] = useState<AuthState>({
+    const [authState, setAuthState] = useState({
         isAuthenticated: false,
         isLoading: true
     });
+    const { setAuth, clearAuth } = useAuthStore();
 
-    const checkAuth = async (): Promise<void> => {
+    const checkAuth = async () => {
         const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) {
             const response: ApiResponse<AuthDto> | null = await jwtAuthApi.silentLogin().catch(() => null);
 
             if (!response || response.status === 204) {
-                setState({
+                setAuthState({
                     isAuthenticated: false,
                     isLoading: false,
                 });
+                clearAuth();
                 navigate('/login');
                 return;
             }
             
             localStorage.setItem('accessToken', response.data.accessToken);
-            setState({
+            setAuth(response.data);
+            setAuthState({
                 isAuthenticated: true,
                 isLoading: false
             });
             return;
         }
 
-        setState({
+        setAuthState({
             isAuthenticated: true,
             isLoading: false
         });
@@ -54,7 +48,7 @@ export const useAuth = (): AuthHookReturn => {
     }, [navigate]);
 
     return {
-        ...state,
+        ...authState,
         checkAuth
     };
 };

@@ -1,4 +1,4 @@
-import { AuthDto } from '@/entities/auth/model/dtos'
+import { AuthDto, useAuthStore } from '@/entities/auth'
 import { discordApi } from '@/features/auth/api/discordApi'
 import { ApiResponse } from '@/shared/api/types'
 import { LoadingSpinner } from '@/shared/ui/LoadingSpinner'
@@ -9,6 +9,7 @@ export const DiscordCallback = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const isRequesting = useRef(false)
+  const { setAuth } = useAuthStore()
 
   useEffect(() => {
     const code = searchParams.get('code')
@@ -26,18 +27,16 @@ export const DiscordCallback = () => {
         const response: ApiResponse<AuthDto> = await discordApi.login(code)
         
         localStorage.setItem('accessToken', response.data.accessToken)
+        setAuth(response.data)
         navigate('/')
 
       } catch (error) {
         console.error('Discord auth failed:', error)
         navigate('/error')
-      } finally {
       }
     }
     handleAuth()
   }, [searchParams, navigate])
 
-  return (
-    <LoadingSpinner />
-  )
+  return <LoadingSpinner />
 } 
