@@ -1,3 +1,4 @@
+import { LogoutButton } from '@/features/auth/ui/LogoutButton'
 import { TabBar } from "@/widgets/tab-bar"
 
 export const MobileLayout = ({children}: {children: React.ReactNode}) => {
@@ -7,6 +8,7 @@ export const MobileLayout = ({children}: {children: React.ReactNode}) => {
             <header className="sticky top-0 left-0 right-0 h-12 bg-primary shadow-sm z-10">
                 <div className="flex items-center justify-between px-4 h-full">
                     <h1 className="text-lg font-bold text-white">LoTo</h1>
+                    <LogoutButton />
                 </div>
             </header>
 
