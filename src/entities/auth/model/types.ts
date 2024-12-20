@@ -5,12 +5,3 @@ export interface User {
     discordUsername: string,
     discordAvatar: string
 }
-
-export interface AuthResponse {
-    accessToken: string,
-    user: User
-}
-
-export interface RefreshTokenResponse {
-    refreshToken: string
-}

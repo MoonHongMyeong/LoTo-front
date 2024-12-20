@@ -10,34 +10,63 @@ import { LoadingSpinner } from '@/shared/ui/LoadingSpinner'
 import { createBrowserRouter, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+interface RouteComponentProps {
+  children: React.ReactNode
+}
+
+interface ProtectedRouteProps extends RouteComponentProps {
+  redirectTo?: string
+}
+
+interface LoginRouteProps extends RouteComponentProps {
+  defaultRedirect?: string
+}
+
+interface RouteConfig {
+  path: string
+  element: React.ReactNode
+  errorElement?: React.ReactNode
+}
+
+const ProtectedRoute = ({ children, redirectTo = '/login' }: ProtectedRouteProps) => {
   const { isAuthenticated, isLoading } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      navigate(redirectTo, { 
+        state: { from: location.pathname },
+        replace: true
+      })
+    }
+  }, [isAuthenticated, isLoading, navigate, redirectTo, location])
 
   if (isLoading) return <LoadingSpinner />
-  if (!isAuthenticated) {
-    navigate('/login', { state: { from: window.location.pathname } })
-  }
 
   return children
 }
 
-const LoginRoute = ({ children }: { children: React.ReactNode }) => {
+const LoginRoute = ({ children, defaultRedirect = '/' }: LoginRouteProps) => {
+  const { isAuthenticated, isLoading } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
 
   useEffect(() => {
-    const hasAccessToken = localStorage.getItem('accessToken') !== undefined
-    if (hasAccessToken) {
-      const from = location.state?.from || '/'
-      navigate(from, { replace: true })
+    if (!isLoading && isAuthenticated) {
+      const from = location.state?.from || defaultRedirect
+      navigate(from, { 
+        replace: true
+      })
     }
-  }, [location.state?.from, navigate])
+  }, [isAuthenticated, isLoading, navigate, location, defaultRedirect])
+
+  if (isLoading) return <LoadingSpinner />
 
   return children
 }
 
-export const router = createBrowserRouter([
+const routes: RouteConfig[] = [
   {
     path: '/auth/discord/callback',
     element: <DiscordCallback />,
@@ -62,5 +91,6 @@ export const router = createBrowserRouter([
     path: '/character',
     element: <ProtectedRoute><Layout><Character /></Layout></ProtectedRoute>,
   },
-  
-])
+] satisfies RouteConfig[]
+
+export const createAppRouter = () => createBrowserRouter(routes)

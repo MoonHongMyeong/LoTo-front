@@ -1,5 +1,6 @@
-import { AuthResponse } from '@/entities/auth'
+import { AuthDto } from '@/entities/auth/model/dtos'
 import { discordApi } from '@/features/auth/api/discordApi'
+import { ApiResponse } from '@/shared/api/types'
 import { LoadingSpinner } from '@/shared/ui/LoadingSpinner'
 import { useEffect, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -19,13 +20,12 @@ export const DiscordCallback = () => {
 
     const handleAuth = async () => {
       try {
-        console.log("isRequesting: ", isRequesting)
         if (isRequesting.current) return
         isRequesting.current = true
 
-        const response: AuthResponse = await discordApi.login(code)
+        const response: ApiResponse<AuthDto> = await discordApi.login(code)
         
-        localStorage.setItem('accessToken', response.accessToken)
+        localStorage.setItem('accessToken', response.data.accessToken)
         navigate('/')
 
       } catch (error) {
